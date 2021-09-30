@@ -1,0 +1,35 @@
+pipeline {
+    agent any
+    tools {nodejs "node16"}
+    environment {
+        NODE_ENV='production'
+    }
+
+    stages {
+        stage('Source') {
+            steps {
+                git 'https://github.com/fwaraich78/aws_codebuild_codedeploy_nodeJs_demo.git'
+                echo "File content for sample.txt"
+                sh 'cat sample.txt'
+            }
+        }
+        stage('Build') {
+            environment {
+                NODE_ENV='staging'
+            }
+            steps {
+                echo NODE_ENV
+                withCredentials([string(credentialsId: 'd47a34d6-43f9-4a1a-b41a-1f85a436e437', variable: 'secretVariable')]) {
+                // some block
+                echo secretVariable
+                }
+                sh 'npm install'
+            }
+        }
+        stage('Save Artifacts') {
+            steps {
+                archiveArtifacts artifacts: '**', followSymlinks: false
+            }
+        }
+    }
+}
